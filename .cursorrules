@@ -1,0 +1,43 @@
+# Cursor Rules for cursor-jetson-edge-kit
+
+## Project Context
+
+This is a training kit for "Cursor + Jetson + Edge AI" development. The goal is to teach half-career-switch engineers, PMs, and makers how to use Cursor IDE to develop Edge AI demos on NVIDIA Jetson devices.
+
+## Code Modification Guidelines
+
+### Security & Best Practices
+
+1. **Never hardcode secrets**: Always use environment variables or config files. Never commit API keys, tokens, or credentials directly in code.
+2. **Protected files**: Do not modify `LICENSE`, `VERSION`, or author information without explicit permission.
+3. **Git workflow**: When suggesting new commands or changes, prefer using `tools/git_semi_auto.sh` to remind the user about commit/push workflow.
+
+### Development Workflow
+
+1. **Plan before code**: Always follow this pattern:
+   - First, list all files that will be modified
+   - Explain the intent of changes for each file
+   - Then proceed with implementation
+2. **Modular design**: Keep camera, inference, pipeline, and config logic separated in their respective modules.
+
+### Code Style
+
+- **Python version**: Python 3.10+
+- **Type hints**: Always use type hints for function parameters and return values
+- **Modularity**: Maintain clear separation between:
+  - `kit/camera.py` - Camera interface
+  - `kit/inference.py` - Inference engine
+  - `kit/pipeline.py` - Pipeline orchestration
+  - `kit/config.py` - Configuration management
+- **Documentation**: Include clear docstrings that are beginner-friendly, explaining:
+  - What the function/class does
+  - Parameters and return values
+  - Future extensions (e.g., Jetson support, TensorRT integration)
+
+### Architecture Principles
+
+- Keep implementations simple and extensible
+- Use placeholder/fake implementations when hardware is not available
+- Document future integration points (GStreamer, TensorRT, etc.)
+- Make code readable for beginners learning Edge AI
+

@@ -1,94 +1,80 @@
 """
-Camera interface for capturing frames from various sources.
+Camera abstraction.
 
-Currently supports OpenCV-based camera access (USB webcam, built-in camera).
-Future versions will support Jetson-specific sources (GStreamer, MIPI CSI).
+In v0.1 this uses OpenCV and is designed to work on a regular PC.
+Later we can add Jetson / GStreamer / CSI camera backends.
 """
 
-from typing import Optional
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Optional, Tuple
+
 import cv2
+import numpy as np
 
 
+@dataclass
 class Camera:
     """
-    Camera interface for frame capture.
-    
-    Supports USB webcams and built-in cameras via OpenCV.
-    Future: Will support Jetson GStreamer pipelines and MIPI CSI cameras.
-    
-    Example:
-        >>> camera = Camera(source="0")
-        >>> camera.open()
-        >>> frame = camera.read()
-        >>> camera.release()
-    """
-    
-    def __init__(self, source: str = "0"):
-        """
-        Initialize camera with a source identifier.
-        
-        Args:
-            source: Camera source identifier. 
-                   For USB webcams, typically "0", "1", etc.
-                   Future: Will support GStreamer pipeline strings for Jetson.
-        """
-        self.source = source
-        self.cap: Optional[cv2.VideoCapture] = None
-        self.is_opened = False
-    
-    def open(self) -> bool:
-        """
-        Open the camera connection.
-        
-        Returns:
-            True if camera opened successfully, False otherwise.
-        """
-        try:
-            # Convert string source to int if it's a numeric string
-            source_int = int(self.source) if self.source.isdigit() else self.source
-            self.cap = cv2.VideoCapture(source_int)
-            self.is_opened = self.cap.isOpened()
-            return self.is_opened
-        except Exception as e:
-            print(f"Error opening camera {self.source}: {e}")
-            self.is_opened = False
-            return False
-    
-    def read(self) -> Optional[tuple[bool, Optional[any]]]:
-        """
-        Read a frame from the camera.
-        
-        Returns:
-            Tuple of (success: bool, frame: numpy.ndarray or None).
-            Returns (False, None) if camera is not opened or read fails.
-        """
-        if not self.is_opened or self.cap is None:
-            return False, None
-        
-        try:
-            ret, frame = self.cap.read()
-            return ret, frame
-        except Exception as e:
-            print(f"Error reading frame: {e}")
-            return False, None
-    
-    def release(self) -> None:
-        """
-        Release the camera resource.
-        
-        Should be called when done using the camera to free resources.
-        """
-        if self.cap is not None:
-            self.cap.release()
-            self.is_opened = False
-            self.cap = None
-    
-    def __enter__(self):
-        """Context manager entry."""
-        self.open()
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit."""
-        self.release()
+    Simple camera wrapper.
 
+    Parameters
+    ----------
+    source:
+        OpenCV video source. Usually:
+          - "0" (string) or 0 (int) for default webcam
+          - a file path to a video
+    """
+
+    source: str = "0"
+    _cap: Optional[cv2.VideoCapture] = None
+
+    def open(self) -> None:
+        """Open the camera if it is not already opened."""
+        if self._cap is not None:
+            return
+
+        # Allow both "0" and 0
+        src: int | str
+        try:
+            src = int(self.source)
+        except ValueError:
+            src = self.source
+
+        self._cap = cv2.VideoCapture(src)
+        if not self._cap.isOpened():
+            # Fallback: create a dummy frame later
+            self._cap.release()
+            self._cap = None
+            print("[Camera] Warning: failed to open camera, will use dummy frame.")
+
+    def read(self) -> Tuple[bool, np.ndarray]:
+        """
+        Read a single frame.
+
+        Returns
+        -------
+        success: bool
+        frame: np.ndarray
+            If camera cannot be opened, a dummy image is returned.
+        """
+        if self._cap is None:
+            # Try to open once
+            self.open()
+
+        if self._cap is not None:
+            ok, frame = self._cap.read()
+            if ok:
+                return True, frame
+            print("[Camera] Warning: failed to read frame, falling back to dummy frame.")
+
+        # Dummy 480x640 RGB frame (black)
+        dummy = np.zeros((480, 640, 3), dtype=np.uint8)
+        return True, dummy
+
+    def release(self) -> None:
+        """Release the underlying capture if opened."""
+        if self._cap is not None:
+            self._cap.release()
+            self._cap = None

@@ -1,67 +1,128 @@
-# Project Overview
+# 00 – Overview
 
 ## What is cursor-jetson-edge-kit?
 
-`cursor-jetson-edge-kit` is a beginner-friendly development kit that helps you build real-world Edge AI demos using Cursor IDE and NVIDIA Jetson devices. It provides a structured workflow, modular code architecture, and practical SOPs (Standard Operating Procedures) to make Edge AI development accessible to everyone.
+**cursor-jetson-edge-kit** is a beginner-friendly Edge AI development starter kit that combines:
 
-## The Problem It Solves
+- **Cursor** – AI-assisted IDE for rapid development  
+- **NVIDIA Jetson** – the most common hardware platform for edge AI  
+- **A clean SOP & modular pipeline** – so beginners can build real demos quickly  
 
-Many people want to build Edge AI applications but face these challenges:
+This project is intentionally simple, well-structured, and predictable.  
+It serves as a **real-world template** for building camera-based AI demos on both:
 
-- **Steep learning curve**: Combining AI models, hardware optimization, and deployment is complex
-- **Tool fragmentation**: Different tools for different tasks (model conversion, camera setup, inference)
-- **Lack of structure**: No clear workflow for iterative development
-- **Hardware complexity**: Jetson setup and optimization can be intimidating
+- regular PCs (development phase), and  
+- Jetson devices (deployment phase).  
 
-This kit addresses these by providing:
-- A clear, modular architecture
-- Step-by-step documentation
-- AI-powered development workflow with Cursor
-- Ready-to-use examples and templates
+Whether your goal is learning, rapid prototyping, portfolio building, or teaching others, this kit offers a clean foundation.
 
-## Who Should Use This Kit?
+---
 
-- **Half-career-switch engineers**: Transitioning into AI/ML and need hands-on practice
-- **Product Managers**: Want to understand Edge AI deployment from a technical perspective
-- **Makers**: Have a Jetson board and want to build something practical
-- **Self-taught developers**: Learning Edge AI and need structured guidance
-- **Anyone**: Interested in combining modern AI tooling (Cursor) with edge hardware (Jetson)
+## Why does this project exist?
 
-## Why Cursor + Jetson?
+Most beginners struggle with:
 
-### Cursor IDE Benefits
+- too many scattered tutorials  
+- no standard folder structure  
+- unclear development workflow  
+- no safe Git practice  
+- difficulty connecting camera → inference → pipeline  
+- being overwhelmed by Jetson setup  
 
-- **AI-powered assistance**: Generate boilerplate code, debug, and iterate faster
-- **Context-aware suggestions**: Understands your project structure and suggests relevant changes
-- **Rapid prototyping**: Turn ideas into working code quickly
-- **Learning accelerator**: See how code should be structured while you build
+And for career switchers or PMs learning Edge AI:
 
-### Jetson Platform Benefits
+> "I don't know where to start,  
+> I don't know what sequence to follow,  
+> and I don't know how to make something that actually runs."
 
-- **Real edge deployment**: Not just simulation, but actual hardware
-- **Industry standard**: Used in production Edge AI applications
-- **Optimized inference**: TensorRT for maximum performance
-- **Complete ecosystem**: Camera, sensors, and AI models work together
+This kit fixes that with:
 
-### The Combination
+✔ A minimal pipeline  
+✔ A step-by-step workflow  
+✔ A reproducible project blueprint  
+✔ Cursor automation for coding  
+✔ Jetson-ready structure  
+✔ Example scripts you can extend  
 
-Together, Cursor + Jetson creates a powerful learning and development environment:
-- **Fast iteration**: Cursor helps you code quickly, Jetson lets you test on real hardware
-- **Practical learning**: Build real demos, not just tutorials
-- **Portfolio building**: Create projects you can show and deploy
-- **Career readiness**: Learn tools and workflows used in industry
+---
 
-## Project Goals
+## High-level architecture
 
-1. **Accessibility**: Make Edge AI development approachable for beginners
-2. **Structure**: Provide clear workflows and best practices
-3. **Modularity**: Build reusable components that can be extended
-4. **Documentation**: Comprehensive guides for every step
-5. **Community**: Create a resource others can learn from and contribute to
+```text
+cursor-jetson-edge-kit
+│
+├── kit/ → core modules
+│ ├── camera.py → frame source
+│ ├── inference.py → fake (later: TensorRT / ONNX)
+│ ├── pipeline.py → glue logic
+│ └── config.py → env/config helpers
+│
+├── examples/ → small runnable scripts
+│ └── minimal_camera_pipeline.py
+│
+└── docs/ → how to use the kit
+```
 
-## Next Steps
+And the main processing flow:
 
-- Read [Quick Start Guide](01_quickstart.md) to get started
-- Check [Cursor Workflow](03_cursor_workflow.md) to understand the development process
-- Explore the [examples](../examples/) directory for working code
+```text
+Camera → Preprocess → Inference → Postprocess → Result
+```
 
+In v0.1 we implement a simplified version:
+
+```text
+Pipeline.run_once()
+├── Camera.read()
+├── InferenceEngine.infer()
+└── returns detections
+```
+
+---
+
+## Who is this for?
+
+This project is built for:
+
+- self-taught developers  
+- PMs who want hands-on AI skills  
+- career switchers entering AI/Edge  
+- makers and students  
+- Jetson beginners who want structure  
+- anyone learning how to use Cursor + AI coding  
+
+You do NOT need advanced ML knowledge.
+
+---
+
+## What can you build with this?
+
+Within the next versions (v0.1 → v0.4), you will be able to quickly build:
+
+- image classification demos  
+- object detection demos (ONNX/TensorRT)  
+- barcode / QR code readers  
+- edge OCR tools  
+- offline kiosk-style applications  
+- Jetson hardware camera demos  
+- rapid prototypes for presentations  
+
+This kit is designed to scale with your skills.
+
+---
+
+## Roadmap (Short Summary)
+
+- Jetson GStreamer camera  
+- Real ONNX/TensorRT inference  
+- Configurable YAML settings  
+- Demo loop (`run_forever`)  
+- Visualization utilities  
+- Example: YOLO inference  
+- Example: simple offline kiosk  
+- Example: AI sensor pipeline  
+
+---
+
+If you want to understand **why this kit matters**:  
+You are holding the blueprint for how the next generation of developers will learn Edge AI.

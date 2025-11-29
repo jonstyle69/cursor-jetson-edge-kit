@@ -7,11 +7,11 @@ from pathlib import Path
 
 # Read version from VERSION file
 version_file = Path(__file__).parent / "VERSION"
-version = version_file.read_text().strip() if version_file.exists() else "0.1.0"
+version = version_file.read_text(encoding="utf-8").strip() if version_file.exists() else "0.1.0"
 
 # Read README for long description
 readme_file = Path(__file__).parent / "README.md"
-long_description = readme_file.read_text() if readme_file.exists() else ""
+long_description = readme_file.read_text(encoding="utf-8") if readme_file.exists() else ""
 
 setup(
     name="cursor-jetson-edge-kit",

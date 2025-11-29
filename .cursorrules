@@ -1,43 +1,228 @@
-# Cursor Rules for cursor-jetson-edge-kit
+# cursor-jetson-edge-kit – Project Rules for Cursor
 
-## Project Context
+# ------------------------------------------------------------------
+# 0. Project identity
+# ------------------------------------------------------------------
 
-This is a training kit for "Cursor + Jetson + Edge AI" development. The goal is to teach half-career-switch engineers, PMs, and makers how to use Cursor IDE to develop Edge AI demos on NVIDIA Jetson devices.
+You are working inside the repository: `cursor-jetson-edge-kit`.
 
-## Code Modification Guidelines
+This repo is an open-source Edge AI starter kit that combines:
+- Cursor as the primary development environment, and
+- NVIDIA Jetson (and regular PCs) as the target runtime.
 
-### Security & Best Practices
+The main audience:
+- Self-taught developers
+- PMs who want hands-on AI experience
+- Makers and students using Jetson boards
+- Career switchers building their first portfolio project
 
-1. **Never hardcode secrets**: Always use environment variables or config files. Never commit API keys, tokens, or credentials directly in code.
-2. **Protected files**: Do not modify `LICENSE`, `VERSION`, or author information without explicit permission.
-3. **Git workflow**: When suggesting new commands or changes, prefer using `tools/git_semi_auto.sh` to remind the user about commit/push workflow.
+The primary goals:
+- Provide a clean, modular pipeline for Edge AI demos.
+- Teach a repeatable development workflow using Cursor.
+- Keep the codebase friendly for beginners but structurally sound.
 
-### Development Workflow
+Always optimize for clarity, explicitness, and teachability.
 
-1. **Plan before code**: Always follow this pattern:
-   - First, list all files that will be modified
-   - Explain the intent of changes for each file
-   - Then proceed with implementation
-2. **Modular design**: Keep camera, inference, pipeline, and config logic separated in their respective modules.
 
-### Code Style
+# ------------------------------------------------------------------
+# 1. Guard rails – things you MUST NOT do
+# ------------------------------------------------------------------
 
-- **Python version**: Python 3.10+
-- **Type hints**: Always use type hints for function parameters and return values
-- **Modularity**: Maintain clear separation between:
-  - `kit/camera.py` - Camera interface
-  - `kit/inference.py` - Inference engine
-  - `kit/pipeline.py` - Pipeline orchestration
-  - `kit/config.py` - Configuration management
-- **Documentation**: Include clear docstrings that are beginner-friendly, explaining:
-  - What the function/class does
-  - Parameters and return values
-  - Future extensions (e.g., Jetson support, TensorRT integration)
+1. Secrets and sensitive data
+   - Never hard-code API keys, tokens, passwords, IPs, or secrets.
+   - Always read secrets from environment variables or config files.
+   - Assume `.env` is local-only and NEVER suggest committing it.
 
-### Architecture Principles
+2. Legal / metadata files
+   - Do NOT modify or delete:
+     - `LICENSE`
+     - `VERSION`
+     - Author information (JohnTao) in license headers.
+   - If a change to these files is really required, only propose it
+     with a clear explanation in natural language; do not apply it.
 
-- Keep implementations simple and extensible
-- Use placeholder/fake implementations when hardware is not available
-- Document future integration points (GStreamer, TensorRT, etc.)
-- Make code readable for beginners learning Edge AI
+3. Git / repository safety
+   - Do NOT create any new Git history or run `git` commands
+     automatically.
+   - Instead, whenever a change set is ready, remind the user to run:
+       `bash tools/git_semi_auto.sh`
+     from the project root, and explain that this script:
+       - adds files,
+       - runs a safety check (env/models/datasets),
+       - commits with a user-provided message,
+       - optionally pushes to remote.
 
+4. Breaking changes
+   - Avoid introducing breaking changes to public imports:
+       `from kit import Camera, InferenceEngine, Pipeline`
+   - If you must introduce a breaking change, clearly document it in
+     both code (docstrings) and the relevant `docs/` file.
+
+
+# ------------------------------------------------------------------
+# 2. General development workflow
+# ------------------------------------------------------------------
+
+Before editing multiple files, follow this sequence:
+
+1. Understand the intent
+   - Read the user's request carefully.
+   - Quickly scan relevant files (especially in `kit/`, `examples/`,
+     and `docs/`) to understand the current implementation.
+
+2. Plan before coding
+   - Always output a short PLAN section before applying any edits.
+   - The plan should include:
+     - which files will be modified or created,
+     - a short description of the change in each file,
+     - any new public functions/classes you will add.
+
+3. Implement changes
+   - Apply small, coherent changes following the plan.
+   - Keep functions and classes focused and readable.
+   - Prefer refactoring over duplication where it stays beginner-friendly.
+
+4. Summarize result
+   - After edits, output a SUMMARY section:
+     - list of files changed,
+     - main behaviors added/modified,
+     - any manual steps the user should run (e.g., `python examples/...`).
+
+5. Suggest Git workflow
+   - At the end of a larger change, remind the user they can run:
+       `bash tools/git_semi_auto.sh`
+     to review, commit, and optionally push the changes.
+
+
+# ------------------------------------------------------------------
+# 3. Code style & architecture
+# ------------------------------------------------------------------
+
+1. Language & version
+   - Python 3.10+.
+   - Use type hints for all public functions and methods.
+   - Use `from __future__ import annotations` at the top of new modules.
+
+2. Structure
+   - Core modules live under `kit/`:
+     - `camera.py`        → input frames
+     - `inference.py`     → AI model logic
+     - `pipeline.py`      → orchestration glue
+     - `config.py`        → configuration helpers
+   - Examples live under `examples/`.
+   - Documentation lives under `docs/`.
+
+3. API conventions
+   - Prefer small, composable classes and functions.
+   - Public classes should have clear docstrings describing their role
+     and basic usage.
+   - Keep the primary high-level entry points:
+       - `Camera`
+       - `InferenceEngine`
+       - `Pipeline`
+     importable from `kit.__init__`.
+
+4. Edge AI pipeline pattern
+   - The conceptual pipeline is:
+       Camera → Preprocess → Inference → Postprocess → Output
+   - In v0.x, an acceptable minimal implementation is:
+       `Pipeline.run_once()`:
+          - reads one frame from Camera
+          - runs InferenceEngine.infer(frame)
+          - returns structured results
+
+5. Error handling
+   - Fail fast with clear error messages (raise exceptions) when
+     encountering invalid states (e.g., no frame, wrong data type).
+   - For non-critical issues (e.g., missing camera), fall back to
+     a dummy frame with a printed warning where appropriate.
+
+6. Dependencies
+   - For now, keep dependencies minimal.
+   - Use OpenCV (`cv2`) and NumPy as base for image operations.
+   - When adding new dependencies, mention them in the README and/or
+     `docs/01_quickstart.md`.
+
+
+# ------------------------------------------------------------------
+# 4. Documentation & teaching
+# ------------------------------------------------------------------
+
+1. Tone
+   - Write documentation and comments as if you are teaching a smart
+     beginner or a PM who codes.
+   - Prefer concrete examples over abstract theory.
+
+2. Docs directory
+   - `docs/00_overview.md` → explain what the kit is and why it exists.
+   - `docs/01_quickstart.md` → concrete steps to get a minimal example running.
+   - `docs/02_jetson_setup.md` → Jetson-specific notes (later).
+   - `docs/03_cursor_workflow.md` → how to use Cursor with this repo.
+   - `docs/99_roadmap.md` → planned future features.
+
+3. When adding features
+   - If you add a user-facing feature (new example, new config option,
+     new pipeline capability), update:
+       - the relevant doc in `docs/`, and
+       - the README if it changes capabilities.
+
+4. Dev logs (optional)
+   - When the user asks for "what changed in this iteration," summarize
+     the change list in a dev-log style that they can paste into a
+     future `docs/dev_log.md` if desired.
+
+
+# ------------------------------------------------------------------
+# 5. Jetson-specific considerations
+# ------------------------------------------------------------------
+
+1. Runtime compatibility
+   - Ensure code continues to work on a regular PC even when adding
+     Jetson-specific paths (e.g., GStreamer).
+   - Where Jetson-only functionality is added (e.g., CSI camera),
+     document it clearly in comments and docs.
+
+2. Conditional features
+   - Jetson-specific imports or code paths should be guarded with
+     feature checks (e.g., environment variables, try/except imports).
+
+3. Performance notes
+   - When you introduce optimizations (batching, TensorRT, etc.),
+     briefly explain in comments what the trade-offs are.
+
+
+# ------------------------------------------------------------------
+# 6. When the user asks you to "clean up" or "refactor"
+# ------------------------------------------------------------------
+
+1. Preserve public API
+   - Maintain the existing public entry points unless explicitly asked
+     to redesign them.
+
+2. Small steps
+   - Do refactors in small, understandable steps rather than one huge
+     transformation.
+   - After refactoring, restate the high-level layout (which module
+     does what).
+
+3. Backwards compatibility
+   - If you must break compatibility, explicitly mention:
+     - what changed,
+     - how a user should update their code,
+     - why this change is beneficial.
+
+
+# ------------------------------------------------------------------
+# 7. Communication style in this project
+# ------------------------------------------------------------------
+
+When responding to the user inside Cursor:
+
+- Be concise but concrete.
+- Prefer bullet lists when describing plans or change sets.
+- Avoid generic explanations; always relate suggestions back to this
+  repository's structure and goals.
+- Assume the user will eventually turn this into tutorials and public
+  content, so aim for clarity and reusability in everything you design.
+
+End of rules.

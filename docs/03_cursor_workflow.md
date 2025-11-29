@@ -1,175 +1,196 @@
-# Cursor Development Workflow
+# 03 – Cursor Development Workflow  
 
-This guide explains how to effectively use Cursor IDE to develop Edge AI applications in this project.
+How to use Cursor effectively with this repository.
 
-## Philosophy: "Jetson Read" First
+---
 
-Before making any changes, always follow the "Jetson Read" approach:
+## Why a workflow?
 
-1. **Read the requirements**: Understand what you're trying to build
-2. **Read existing code**: Review related modules and examples
-3. **Plan your changes**: Think about which files need modification
-4. **Then code**: Let Cursor help you implement
+Cursor is extremely powerful, but without structure:
 
-This prevents unnecessary rewrites and ensures your changes fit the existing architecture.
+- it may modify too many files at once  
+- it may misunderstand your intentions  
+- it may create breaking changes  
+- it may introduce security issues  
 
-## Iterative Development Process
+To prevent that, this repository includes **.cursorrules** which defines clear rules.
 
-### 1. Set the Task
+This document explains the recommended workflow.
 
-Clearly define what you want to accomplish. For example:
-- "Add support for MIPI camera on Jetson"
-- "Integrate YOLOv8 inference with TensorRT"
-- "Add frame rate monitoring to the pipeline"
+---
 
-### 2. Plan File Changes
+## 1. "Jetson Read" – Always read before coding
 
-Before asking Cursor to make changes, list:
-- Which files will be modified
-- What each file's role is in the change
-- Any new files that need to be created
+Before you ask Cursor to write code:
 
-Example:
-```
-Files to modify:
-- kit/camera.py: Add MIPI camera support alongside USB
-- kit/config.py: Add camera source configuration
-- examples/minimal_camera_pipeline.py: Update to use new config
+1. Show Cursor the existing file  
+2. Ask it to summarize the current behavior  
+3. Confirm the problem or objective  
+4. Only then let Cursor propose code  
 
-New files:
-- docs/jetson_camera_setup.md: Documentation for MIPI setup
+**Example prompt:**
+
+```text
+Read kit/inference.py.
+Summarize what the current fake inference engine does.
+I want to replace it with ONNX inference.
+What files need to be changed?
 ```
 
-### 3. Let Cursor Edit
+Cursor will now work with context rather than hallucinating.
 
-Use Cursor's AI assistance to:
-- Generate boilerplate code
-- Refactor existing code
-- Add type hints and docstrings
-- Fix bugs and improve structure
+---
 
-**Pro tip**: Break large changes into smaller, focused requests. Cursor works better with specific, incremental tasks.
+## 2. Use "Plan Before Code"
 
-### 4. Run Tests
+Every time you ask Cursor to modify multiple files, use this structure:
 
-After changes:
-- **On PC**: Test with `python examples/minimal_camera_pipeline.py`
-- **On Jetson**: Deploy and test with real hardware
-- Check for errors, performance issues, or unexpected behavior
+```text
+PLAN:
+- List which files to change
+- Describe what will be changed
+- Explain the high-level logic
+Then implement the plan.
+```
 
-### 5. Log Results
+**Example:**
 
-Document your iteration:
-- What worked?
-- What didn't?
-- What would you do differently?
-- Performance metrics (FPS, latency, etc.)
+```text
+Plan changes for adding TensorRT:
+- kit/inference.py
+  - add new TensorRTInferenceEngine
+  - keep FakeInferenceEngine for compatibility
+- examples/
+  - new example file using TensorRT engine
+- docs/
+  - update 00_overview.md with new engine type
 
-Consider maintaining a dev log (we may add a `dev_log/` directory in the future).
+Proceed only after confirming the plan.
+```
 
-## Cursor Chat Best Practices
+This prevents chaotic file edits.
 
-### Effective Prompts
+---
 
-**Good prompts:**
-- "Add a `get_fps()` method to the Pipeline class that returns the current frame rate"
-- "Refactor the camera initialization to support both USB and MIPI sources based on config"
-- "Add type hints to all functions in `kit/inference.py`"
+## 3. Use the Git safety script
 
-**Less effective prompts:**
-- "Fix the code" (too vague)
-- "Make it better" (no clear goal)
-- "Do everything" (too broad)
+Never let Cursor run `git add`, `git commit`, or `git push`.
 
-### Using .cursorrules
-
-The `.cursorrules` file guides Cursor's behavior:
-- Enforces security practices (no hardcoded secrets)
-- Maintains code style (type hints, modularity)
-- Reminds about Git workflow
-
-Cursor will automatically follow these rules when making suggestions.
-
-## Example Workflow: Adding a New Feature
-
-Let's say you want to add frame rate monitoring:
-
-1. **Set task**: "Add FPS monitoring to the Pipeline class"
-
-2. **Plan changes**:
-   ```
-   - kit/pipeline.py: Add FPS tracking logic
-   - kit/config.py: Add FPS display configuration option
-   - examples/minimal_camera_pipeline.py: Enable FPS display
-   ```
-
-3. **Ask Cursor**: 
-   ```
-   Add FPS monitoring to the Pipeline class. Track frames per second 
-   and provide a method to get current FPS. Add a config option to 
-   enable/disable FPS display.
-   ```
-
-4. **Review changes**: Check that Cursor's implementation:
-   - Follows the existing code style
-   - Has proper type hints
-   - Includes docstrings
-   - Doesn't break existing functionality
-
-5. **Test**: Run the example and verify FPS is calculated correctly
-
-6. **Document**: Update relevant docs if needed
-
-## Git Workflow Integration
-
-After making changes, use the semi-automated Git workflow:
+Instead, after Cursor finishes a batch of edits, run:
 
 ```bash
 bash tools/git_semi_auto.sh
 ```
 
 This script will:
-- Show you what changed
-- Check for sensitive files
-- Help you create a meaningful commit message
-- Optionally push to remote
 
-## Common Patterns
+- show what changed
+- check for sensitive files
+- prevent `.env`, `models`, `datasets`, `.engine`, `.onnx` from being committed
+- ask for your commit message
+- optionally push for you
 
-### Adding a New Module
+This ensures your repo stays clean and safe.
 
-1. Create the file in `kit/`
-2. Define the class with type hints
-3. Add docstrings
-4. Export in `kit/__init__.py`
-5. Create an example usage
+---
 
-### Extending Existing Functionality
+## 4. Iteration loop (recommended)
 
-1. Read the existing implementation
-2. Identify extension points
-3. Add new methods/parameters without breaking existing code
-4. Update examples to show new features
+Use this loop:
 
-### Debugging with Cursor
+```text
+Define task → Plan → Implement → Test locally → Record notes → Commit
+```
 
-- Paste error messages into Cursor Chat
-- Ask Cursor to explain the error
-- Request fixes with context about your goal
-- Review suggested fixes before applying
+For example:
 
-## Tips for Success
+1. "Add preprocessing to pipeline"
+2. Cursor creates a plan
+3. Cursor edits files
+4. You run the example
+5. If good → commit
+6. If not → ask Cursor to fix specific errors
 
-1. **Start small**: Build minimal working examples first
-2. **Iterate**: Make small changes, test, then improve
-3. **Document as you go**: Add docstrings and comments while coding
-4. **Use Cursor's suggestions**: But always review before accepting
-5. **Test frequently**: Don't wait until everything is "done"
+Keep the iterations small.  
+Large multi-file changes should be avoided unless necessary.
 
-## Next Steps
+---
 
-- Try modifying `examples/minimal_camera_pipeline.py`
-- Add a new method to one of the `kit/` modules
-- Experiment with Cursor's refactoring suggestions
-- Build your own pipeline!
+## 5. How to request new modules from Cursor
 
+**Example prompt:**
+
+```text
+Create a new module: kit/visualize.py  
+It should draw bounding boxes using OpenCV.  
+Provide a plan before coding.
+```
+
+Cursor will:
+
+- propose a file
+- generate a plan
+- create minimal implementation
+- update imports if needed
+
+The `.cursorrules` ensures it does so cleanly.
+
+---
+
+## 6. When working on Jetson-specific features
+
+Use prompts like:
+
+```text
+Add a new camera backend using GStreamer.  
+Do not break PC compatibility.  
+Use feature detection or environment variables.
+```
+
+Cursor will produce dual-path code with fallbacks.
+
+---
+
+## 7. When refactoring
+
+Say:
+
+```text
+Refactor kit/pipeline.py for readability.  
+Do not change the public API.  
+Provide a detailed plan first.
+```
+
+Cursor will:
+
+- keep existing class names
+- keep imports working
+- reorganize code safely
+
+---
+
+## 8. When documenting changes
+
+Every time Cursor completes an iteration, ask:
+
+```text
+Summarize what changed in this iteration.
+```
+
+Copy that output into a personal dev log or Git commit message.
+
+---
+
+## Summary
+
+Cursor is a powerful partner, but only when given structure.
+
+This repository provides:
+
+- `.cursorrules`
+- clear folder structure
+- explicit prompts
+- beginner-safe pipeline
+- Jetson-friendly abstractions
+
+Follow this workflow and you will build strong, maintainable Edge AI demos—fast.

@@ -1,42 +1,37 @@
 """
-Configuration management for the Edge AI kit.
+Basic configuration helpers.
 
-Provides default settings and configuration helpers.
-Future: Will support YAML/JSON config files and environment variable overrides.
+For now we keep things simple and read from environment variables
+with safe defaults. Later this can be extended to YAML / TOML.
 """
 
+from __future__ import annotations
+
 import os
+from typing import Optional
+
+
+def get_env(key: str, default: Optional[str] = None) -> Optional[str]:
+    """Read an environment variable with an optional default."""
+    return os.getenv(key, default)
 
 
 def get_default_camera_source() -> str:
     """
-    Get the default camera source identifier.
-    
-    Returns:
-        Default camera source (typically "0" for first USB webcam).
-        Can be overridden via CAMERA_SOURCE environment variable.
+    Default camera source.
+
+    On most systems:
+      - "0" is the first webcam.
+      - You can also pass a video file path.
     """
-    return os.getenv("CAMERA_SOURCE", "0")
+    return get_env("CJEK_CAMERA_SOURCE", "0")  # CJEK = cursor-jetson-edge-kit
 
 
 def get_default_model_path() -> str:
     """
-    Get the default model path.
-    
-    Returns:
-        Default model path.
-        Can be overridden via MODEL_PATH environment variable.
-    """
-    return os.getenv("MODEL_PATH", "models/placeholder.onnx")
+    Default model path.
 
-
-def get_inference_backend() -> str:
+    In v0.1 this is only used as a placeholder. Later we will plug in
+    real ONNX / TensorRT models.
     """
-    Get the preferred inference backend.
-    
-    Returns:
-        Inference backend name ("tensorrt", "onnx", "tflite", or "placeholder").
-        Can be overridden via INFERENCE_BACKEND environment variable.
-    """
-    return os.getenv("INFERENCE_BACKEND", "placeholder")
-
+    return get_env("CJEK_MODEL_PATH", "models/fake_model.engine")

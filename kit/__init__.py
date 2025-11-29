@@ -1,14 +1,13 @@
 """
-cursor-jetson-edge-kit
+Public exports for cursor-jetson-edge-kit.
 
-A beginner-friendly Edge AI development kit for building real-world 
-NVIDIA Jetson demos using Cursor automation, modular pipelines, and practical SOPs.
+This keeps the main entry points small and easy to import:
+
+from kit import Camera, InferenceEngine, Pipeline
 """
 
-from kit.camera import Camera
-from kit.inference import InferenceEngine
-from kit.pipeline import Pipeline
+from .camera import Camera
+from .inference import InferenceEngine
+from .pipeline import Pipeline
 
-__version__ = "0.1.0"
 __all__ = ["Camera", "InferenceEngine", "Pipeline"]
-

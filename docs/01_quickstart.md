@@ -1,99 +1,109 @@
-# Quick Start Guide
+# 01 – Quick Start  
 
-This guide will help you get `cursor-jetson-edge-kit` up and running on your machine.
+Getting started in under 3 minutes.
 
-## Prerequisites
+---
 
-- **Python 3.10+**: Check with `python --version`
-- **Git**: For cloning the repository
-- **Cursor IDE** (recommended) or any Python IDE
-- **NVIDIA Jetson device** (optional for now - PC development is supported)
-
-## Step 1: Clone the Repository
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/jonstyle69/cursor-jetson-edge-kit.git
 cd cursor-jetson-edge-kit
 ```
 
-## Step 2: Create Virtual Environment
-
-It's recommended to use a virtual environment to isolate dependencies:
+## 2. (Optional but recommended) Create a Python virtual environment
 
 ```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate it
-# On Linux/Mac:
-source venv/bin/activate
-
-# On Windows:
-venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
-You should see `(venv)` in your terminal prompt when activated.
-
-## Step 3: Install Dependencies
+**Windows (PowerShell):**
 
 ```bash
-# Install the package in editable mode
+python -m venv .venv
+.\.venv\Scripts\activate
+```
+
+## 3. Install dependencies
+
+For now, we keep it lightweight.
+
+```bash
 pip install -e .
 ```
 
-> **Note**: Currently, the package structure is minimal. As the project grows, a `setup.py` or `pyproject.toml` will be added with proper dependencies.
+This enables local development mode and will automatically import modules under `kit/`.
 
-If you encounter any missing dependencies, you can install them manually:
+## 4. Run the minimal example
 
-```bash
-pip install opencv-python numpy
-```
+This example:
 
-## Step 4: Run Your First Example
-
-Try running the minimal camera pipeline example:
+- opens your webcam (if available)
+- falls back to a dummy frame if unavailable
+- runs fake inference
+- prints detection results
 
 ```bash
 python examples/minimal_camera_pipeline.py
 ```
 
-This example:
-- Creates a Camera instance (using OpenCV)
-- Creates an InferenceEngine instance (with fake inference for now)
-- Runs a single pipeline step
-- Prints the inference results
+**Expected output:**
 
-> **Note**: Currently, this example runs on PC with OpenCV. Jetson hardware support and real model inference will be added in future updates.
+```
+[Example] Using camera source: 0
+[Example] Using model path: models/fake_model.engine
+[InferenceEngine] (v0.1) Pretending to load model...
 
-## Step 5: Explore the Code
+[Example] Pipeline result:
+  Frame shape : (480, 640, 3)
+  Detections  :
+    - label=object, score=0.90, bbox=[192, 144, 448, 336]
 
-- Check `kit/` directory for the core modules
-- Read `docs/03_cursor_workflow.md` to understand the development workflow
-- Modify `examples/minimal_camera_pipeline.py` to experiment
+[Example] Done.
+```
+
+If you see this, the project is installed correctly.
+
+## 5. Changing settings
+
+This kit uses environment variables.
+
+**Example:**
+
+```bash
+export CJEK_CAMERA_SOURCE=1
+export CJEK_MODEL_PATH="models/my_model.engine"
+```
+
+Or create a `.env` file (NOT committed to Git):
+
+```bash
+CJEK_CAMERA_SOURCE=0
+CJEK_MODEL_PATH=models/my_model.engine
+```
+
+## 6. Next steps
+
+Once the minimal example works, you can:
+
+- explore `kit/` to understand the pipeline
+- try writing your own example script
+- modify the fake inference into a real ONNX/TensorRT engine
+- run everything on a Jetson board
+- ask Cursor to generate more modules for you
+
+---
 
 ## Troubleshooting
 
-### Camera Issues
+| Issue | Explanation | Fix |
+|-------|-------------|-----|
+| Camera fails to open | No webcam, wrong index | Set `CJEK_CAMERA_SOURCE` to a valid path |
+| OpenCV not found | Missing dependency | `pip install opencv-python` |
+| NumPy error | Version mismatch | `pip install numpy --upgrade` |
+| Import error | Repo not installed | Run `pip install -e .` |
 
-If you get camera errors:
-- Make sure a camera is connected (USB webcam or built-in)
-- On Linux, check camera permissions
-- Try changing the camera source in the code (e.g., `"0"` to `"1"`)
+---
 
-### Import Errors
-
-If you see import errors:
-- Make sure the virtual environment is activated
-- Run `pip install -e .` again
-- Check that you're in the project root directory
-
-### Jetson-Specific Setup
-
-For Jetson hardware setup, see `docs/02_jetson_setup.md` (coming soon).
-
-## Next Steps
-
-- Read the [Overview](00_overview.md) to understand the project vision
-- Learn about the [Cursor Workflow](03_cursor_workflow.md)
-- Start building your own pipeline!
-
+You are now ready to build your first Edge AI demo.
